@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <title>Canteen Feedback System</title>
+  <style>
+    /* General Styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: #000;
+    }
+    .hidden {
+      display: none;
+    }
+
+    /* Centered Container */
+    .container {
+      text-align: center;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      width: 90%;
+      max-width: 1200px;
+      height: 90%;
+      margin: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Heading */
+    h1 {
+      font-size: 40px;
+      color: #000;
+    }
+
+    h2 {
+      font-size: 24px;
+      color: #000;
+    }
+    /* Rating Options */
+    .rating-options {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 1.5em;
+      gap: 20px;
+    }
+
+    /* Hiding radio buttons */
+    .rating-options input[type="radio"] {
+      display: none;
+    }
+
+    /* Emoji Label Styling */
+    .emoji-label {
+      font-size: 5.5em;
+      cursor: pointer;
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+    .emoji-label:hover {
+      transform: scale(1.2);
+	  background-color: #007bff;
+	  border-radius: 50%;
+    }
+    /* Emoji Selection */
+    .rating-options input[type="radio"]:checked + .emoji-label {
+      transform: scale(1.2);
+      background-color: #005BAB;
+	  border-radius: 50%;
+    }
+
+    /* Thank You Screen */
+    #thank-you-screen h2 {
+      font-size: 45px;
+      margin-top: 10px;
+    }
+
+    /* Additional Styles for Scrollable Food Options */
+  .food-options, .good-food-options, .reason-options {
+    display: flex;
+    text-align: left;
+    flex-direction: column;
+    gap: 2px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    width: 100%;
+    max-height: 450px;
+  }
+
+  /* Styling for scrollbar (optional for visual appeal) */
+  .food-options::-webkit-scrollbar, .good-food-options::-webkit-scrollbar {
+    height: 5px;
+    width: 8px;
+  }
+  .food-options::-webkit-scrollbar-thumb, .good-food-options::-webkit-scrollbar-thumb {
+    background-color: #007bff;
+    border-radius: 8px;
+  }
+  .food-options::-webkit-scrollbar-track, .good-food-options::-webkit-scrollbar-track {
+    background-color: #f8f9fa;
+  }
+
+  /* Label Styling within Scrollable Areas */
+  .food-options label, .good-food-options label, .reason-options label {
+		font-size: 22px;
+		padding: 5px;
+		position: relative;
+		top: -28px;
+		left: 100px;
+		width: 90%;
+	}
+
+	.food-options label:hover, .good-food-options label:hover, .reason-options label:hover {
+		background-color: #007bff;
+		padding: 5px;
+	}
+
+    input[type="checkbox"] {
+		position: relative;
+		right: 520px;
+		top: -1px;
+		margin-top: 10px;
+    }
+
+    /* Buttons */
+    button {
+      padding: 12px 20px;
+      font-size: 1em;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      max-width: 300px;
+      margin-top: 1em;
+    }
+    button:disabled {
+      background-color: #c0c0c0;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #005BAB;
+    }
+
+    /* Toast Message */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #f44336;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    .toast.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Custom Alert Styles */
+    .custom-alert {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5);
+      display: flex; justify-content: center; align-items: center; visibility: hidden; opacity: 0; transition: visibility 0s, opacity 0.3s;
+    }
+
+    .custom-alert.active {
+      visibility: visible; opacity: 1;
+    }
+
+    .custom-alert-container {
+      background: #ffffff; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 300px;
+    }
+
+    .alert-buttons { display: flex; justify-content: space-around; margin-top: 20px; }
+    .alert-buttons button {
+      padding: 10px 20px; font-size: 1em; background-color: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .alert-buttons button:hover { background-color: #005BAB; }
+
+    .nav-buttons-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    max-height: 25px;
+    position: relative;
+    bottom: 60px;
+  }
+
+  #rating-next {
+    position: relative; 
+    bottom: 13px; 
+    left: 1040px;
+		}    
+
+   
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .emoji-label {
+        font-size: 3.5em;
+      }
+      h1 {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+      }
+      h2 {
+        font-size: 1em;
+        margin-bottom: 10px;
+      }
+      button {
+        width: 80%;
+      }
+      .container {
+        padding: 15px;
+        max-height: 400px;
+      }
+      .food-options, .good-food-options {
+        max-height: 250px;
+        overflow-y: scroll;
+      }
+      .reason-options {
+        max-height: 250px;
+      }
+      .food-options input[type="checkbox"], .good-food-options input[type="checkbox"], .reason-options input[type="checkbox"] {
+        position: relative;
+        right: 220px;
+      }
+	  .food-options label, .good-food-options label, .reason-options label {
+		font-size: 18px;
+        margin-left: 20px;
+        position: relative;
+        top: -24px;
+		width: 79%;
+	  }  
+      .alert-buttons button {
+        width: 40%;
+        text-align: center;
+      }
+	  .nav-buttons-container {
+		position: relative;
+		bottom: 50px;
+		}
+    .nav-buttons-container button {
+      width: 10px;
+    }
+		#rating-next {
+      position: relative;
+        left: 525px;
+        width: 10px;
+		}
+    
+	  
+    }
+
+    @media (max-width: 480px) {
+      .emoji-label {
+        font-size: 2em;
+      }
+      h1 {
+        font-size: 1.2em;
+      }
+      h2 {
+        font-size: 1em;
+      }
+      button {
+        width: 100%;
+        padding: 8px;
+      }
+      .container {
+        margin: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="user-icon" style="position: fixed; top: 20px; right: 20px;">
+    <a href="login.html">
+      <i class="fas fa-user" style="font-size: 24px; cursor: pointer;"></i>
+    </a>
+  </div>
+ 
+  <div id="rating-screen" class="container">
+    <h1>Rate Our Food</h1>
+    <div class="nav-buttons-container">
+      <button id="rating-next" onclick="navigateTo('food-screen')" disabled><i class="fa-solid fa-angle-right"></i></button>
+    </div>
+    <div class="rating-options">
+      <input type="radio" name="rating" id="rate-5" value="5">
+      <label for="rate-5" class="emoji-label">😍</label>
+      <input type="radio" name="rating" id="rate-4" value="4">
+      <label for="rate-4" class="emoji-label">🙂</label>
+      <input type="radio" name="rating" id="rate-3" value="3">
+      <label for="rate-3" class="emoji-label">😐</label>
+      <input type="radio" name="rating" id="rate-2" value="2">
+      <label for="rate-2" class="emoji-label">😕</label>
+      <input type="radio" name="rating" id="rate-1" value="1">
+      <label for="rate-1" class="emoji-label">😠</label>
+    </div>
+    
+  </div>
+
+  <!-- Thank You Screen -->
+  <div id="thank-you-screen" class="container hidden">
+    <h2 id="message"></h2>
+    <button id="download-feedback" onclick="downloadFeedback()">Download Feedback</button>
+
+  </div>
+
+  <!-- More Feedback Screen -->
+  <div id="more-feedback-screen" class="container hidden">
+    <h2>Select the food items that were good</h2>
+	<div class="nav-buttons-container">
+		<button id="good-food-back" onclick="navigateTo('rating-screen')"><i class="fas fa-angle-left"></i></button>
+	  </div>
+    <div class="good-food-options" id="good-food-options"></div>
+    <button id="submit-good-feedback" disabled>Submit Feedback</button>
+  </div>
+
+  <!-- Food Screen -->
+  <div id="food-screen" class="container hidden">
+    <h2>Select Food Item(s)</h2>
+    <div class="nav-buttons-container">
+		<button id="food-back" onclick="navigateTo('rating-screen')"><i class="fas fa-angle-left"></i></button>
+		<button id="food-next" onclick="navigateTo('reason-screen')" disabled><i class="fas fa-angle-right"></i></button>
+	</div>
+
+    <div class="food-options" id="food-options" style="padding-top: 20px;"></div>
+    <button id="select-food">Next</button>
+  </div>
+
+  <!-- Reason Screen -->
+  <div id="reason-screen" class="container hidden">
+    <h2>Select Reason(s)</h2>
+    <div class="nav-buttons-container">
+      <button id="reason-back" onclick="navigateTo('food-screen')"><i class="fas fa-angle-left"></i></button>
+    </div>
+
+    <div class="reason-options">
+      <input type="checkbox" id="reason-1" value="Too Spicy">
+      <label for="reason-1">Too Spicy</label>
+      <input type="checkbox" id="reason-2" value="Undercooked">
+      <label for="reason-2">Undercooked</label>
+      <input type="checkbox" id="reason-3" value="Overcooked">
+      <label for="reason-3">Overcooked</label>
+      <input type="checkbox" id="reason-4" value="Not Fresh">
+      <label for="reason-4">Not Fresh</label>
+      <input type="checkbox" id="reason-5" value="Too Oily">
+      <label for="reason-5">Too Oily</label>
+    </div>
+    <button id="submit-reason" disabled>Submit Feedback</button>
+  </div>
+
+  <!-- Custom Alert Screen -->
+  <div id="custom-alert" class="custom-alert">
+    <div class="custom-alert-container">
+      <h3 id="alert-message">Would you like to provide more details?</h3>
+      <div class="alert-buttons">
+        <button id="alert-yes">Yes</button>
+        <button id="alert-no">No</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Toast Message -->
+  <div id="toast" class="toast">Please select at least one option</div>
+
+  <script>
+    const ratingScreen = document.getElementById("rating-screen");
+    const thankYouScreen = document.getElementById("thank-you-screen");
+    const foodScreen = document.getElementById("food-screen");
+    const reasonScreen = document.getElementById("reason-screen");
+    const moreFeedbackScreen = document.getElementById("more-feedback-screen");
+    const toast = document.getElementById("toast");
+    const ratingOptions = document.querySelectorAll(".rating-options input[type='radio']");
+    const selectFoodButton = document.getElementById("select-food");
+    const submitReasonButton = document.getElementById("submit-reason");
+    const submitGoodFeedbackButton = document.getElementById("submit-good-feedback");
+    const foodOptions = document.querySelectorAll(".food-options input[type='checkbox']");
+    const goodFoodOptions = document.querySelectorAll(".good-food-options input[type='checkbox']");
+    const reasonOptions = document.querySelectorAll(".reason-options input[type='checkbox']");
+    const messageDiv = document.getElementById("message");
+    const userIcon = document.getElementById("user-icon");
+    const customAlert = document.getElementById("custom-alert");
+    const alertYesButton = document.getElementById("alert-yes");
+    const alertNoButton = document.getElementById("alert-no");
+	  const ratingNext = document.getElementById("rating-next");
+    const foodNext = document.getElementById("food-next");
+
+	document.addEventListener('DOMContentLoaded', function() {
+		// Load food options from localStorage
+      	populateFoodOptions();		
+		const customAlert = document.getElementById("custom-alert"); // Ensure customAlert is hidden on load
+		customAlert.classList.add("hidden"); // Confirm it remains hidden on load
+	});
+
+	function populateFoodOptions() {
+    const foodOptionsDiv = document.getElementById('food-options');
+    const goodFoodOptionsDiv = document.getElementById('good-food-options');
+
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+
+    // Retrieve the dailyMenus object from localStorage
+    const dailyMenus = JSON.parse(localStorage.getItem('dailyMenus')) || {};
+
+    // Get the menu items for today
+    const foodItemsForToday = dailyMenus[today] || [];
+
+    // Clear previous options if any
+    foodOptionsDiv.innerHTML = '';
+    goodFoodOptionsDiv.innerHTML = '';
+
+    // Populate food options and good food options for today’s menu
+    foodItemsForToday.forEach((item, index) => {
+        // Create checkbox for food selection
+        const foodCheckbox = document.createElement('input');
+        foodCheckbox.type = 'checkbox';
+        foodCheckbox.id = `food-${index + 1}`;
+        foodCheckbox.value = item;
+
+        const foodLabel = document.createElement('label');
+        foodLabel.htmlFor = `food-${index + 1}`;
+        foodLabel.textContent = item;
+
+        foodOptionsDiv.appendChild(foodCheckbox);
+        foodOptionsDiv.appendChild(foodLabel);
+
+        // Create checkbox for good food feedback
+        const goodFoodCheckbox = document.createElement('input');
+        goodFoodCheckbox.type = 'checkbox';
+        goodFoodCheckbox.id = `good-food-${index + 1}`;
+        goodFoodCheckbox.value = item;
+
+        const goodFoodLabel = document.createElement('label');
+        goodFoodLabel.htmlFor = `good-food-${index + 1}`;
+        goodFoodLabel.textContent = item;
+
+        goodFoodOptionsDiv.appendChild(goodFoodCheckbox);
+        goodFoodOptionsDiv.appendChild(goodFoodLabel);
+    });
+
+    // Notify if no menu found for today
+if (foodItemsForToday.length === 0) {
+    showToast("Please update the menu for today.");
+
+    const ratings = document.querySelectorAll(".rating-options input[type='radio']");
+    const labels = document.querySelectorAll(".rating-options .emoji-label");
+    
+    // Disable pointer events and change the cursor for each label (emoji label)
+    ratings.forEach(rating => {
+        rating.style.pointerEvents = 'none';
+        rating.style.cursor = 'not-allowed';
+    });
+    
+    labels.forEach(label => {
+        label.style.cursor = 'not-allowed'; // Change cursor on the labels
+        label.style.pointerEvents = 'none'; // Disable pointer events for the labels
+    });
+}
+
+}
+
+	ratingOptions.forEach(option => {
+      option.addEventListener("change", () => {
+        ratingNext.disabled = !Array.from(ratingOptions).some(radio => radio.checked);
+      });
+    });
+
+    // Enable "Next" button on the Food Screen if any checkbox is selected
+  foodOptions.forEach(option => {
+    option.addEventListener("change", () => {
+      foodNext.disabled = !Array.from(foodOptions).some(checkbox => checkbox.checked);
+    });
+  });
+
+  // Enable Submit button on the Good Food Screen if any checkbox is selected
+  goodFoodOptions.forEach(option => {
+    option.addEventListener("change", () => {
+      submitGoodFeedbackButton.disabled = !Array.from(goodFoodOptions).some(checkbox => checkbox.checked);
+    });
+  });
+
+    function navigateTo(screenId) {
+		const screens = ["rating-screen", "food-screen", "reason-screen"];
+		screens.forEach(screen => {
+			const screenElement = document.getElementById(screen);
+			if (screenElement) {
+			screenElement.classList.add("hidden");
+			}
+		});
+		
+		const targetScreen = document.getElementById(screenId);
+		if (targetScreen) {
+			targetScreen.classList.remove("hidden");
+		}
+	}
+
+    moreFeedbackScreen.addEventListener("change", () => {
+      submitGoodFeedbackButton.disabled = !Array.from(moreFeedbackScreen.querySelectorAll("input[type='checkbox']")).some(cb => cb.checked);
+    });
+
+    ratingOptions.forEach(option => {
+      option.addEventListener("change", () => {
+        ratingValue = parseInt(option.value);
+        if (ratingValue === 5) {
+          showCustomAlert();
+
+          //confirmMoreFeedback();
+        } else {
+          ratingScreen.classList.add("hidden");
+          userIcon.classList.add("hidden");
+          foodScreen.classList.remove("hidden");
+        }
+      });
+    });
+
+    // Show the custom alert
+    function showCustomAlert() {
+      customAlert.classList.add("active");
+    }
+
+    // Close custom alert and proceed based on user choice
+    alertYesButton.addEventListener("click", () => {
+      customAlert.classList.remove("active");
+      showMoreFeedbackScreen(); // Assuming this is your next screen function
+    });
+
+    alertNoButton.addEventListener("click", () => {
+      customAlert.classList.remove("active");
+      ratingScreen.classList.add("hidden");
+      userIcon.classList.add("hidden");
+      showThankYouScreen(ratingValue);    
+    });
+
+    // Enable "Submit Feedback" button on More Feedback screen
+    moreFeedbackScreen.addEventListener("change", () => {
+        submitGoodFeedbackButton.disabled = !Array.from(moreFeedbackScreen.querySelectorAll("input[type='checkbox']")).some(checkbox => checkbox.checked);
+    });
+
+    // Show More Feedback screen
+    function showMoreFeedbackScreen() {
+        ratingScreen.classList.add("hidden");
+        userIcon.classList.add("hidden");
+        moreFeedbackScreen.classList.remove("hidden");
+    }
+
+    selectFoodButton.addEventListener("click", () => {
+    	// Fetch the food options again before checking if they are checked
+		const foodOptions = document.querySelectorAll(".food-options input[type='checkbox']");
+		
+		if (Array.from(foodOptions).some(cb => cb.checked)) {
+			foodScreen.classList.add("hidden");
+			userIcon.classList.add("hidden");
+			foodNext.disabled=false;
+			reasonScreen.classList.remove("hidden");
+		} else {
+			showToast("Please select at least one food item.");
+		}
+	});
+
+    reasonOptions.forEach(option => {
+      option.addEventListener("change", () => {
+        submitReasonButton.disabled = !Array.from(reasonOptions).some(cb => cb.checked);
+      });
+    });
+
+    submitReasonButton.addEventListener("click", () => {
+      showThankYouScreen(ratingValue);
+    });
+
+    submitGoodFeedbackButton.addEventListener("click", () => {
+      showThankYouScreen(ratingValue);
+    });
+
+    // Function to get selected checkboxes as an array of values
+    function getSelectedValues(classSelector) {
+      return Array.from(document.querySelectorAll(classSelector))
+        .filter(option => option.checked)
+        .map(option => option.value);
+    }
+
+    // Function to collect feedback data
+    function collectFeedbackData() {
+      const selectedRating = ratingValue || "Not provided";
+      const selectedFoodItems = getSelectedValues(".food-options input[type='checkbox']").join(",\n") || "-";
+      const goodFoodItems = getSelectedValues(".good-food-options input[type='checkbox']").join(",\n") || "-";
+      const selectedReasons = getSelectedValues(".reason-options input[type='checkbox']").join(",\n") || "-";
+
+      return {
+        rating: selectedRating,
+        foodItems: selectedFoodItems,
+        goodFoodItems: goodFoodItems,
+        reasons: selectedReasons
+      };
+    }
+
+    // Function to download the feedback data as CSV
+    function downloadFeedback() {
+      const feedbackData = collectFeedbackData();
+      const csvContent = `Ratings Given,Food Items Selected,Tasty Foods,Reasons\n"${feedbackData.rating}","${feedbackData.foodItems}","${feedbackData.goodFoodItems}","${feedbackData.reasons}"`;
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = url;
+      downloadLink.setAttribute("download", "canteen_feedback.csv");
+      downloadLink.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function showThankYouScreen(ratingValue) {
+      userIcon.classList.add("hidden");
+      foodScreen.classList.add("hidden");
+      reasonScreen.classList.add("hidden");
+      moreFeedbackScreen.classList.add("hidden");
+      thankYouScreen.classList.remove("hidden");
+      
+      let message = "Thank you for your feedback!";
+      if (ratingValue === 5) {
+        message = "Amazing feedback! We're glad you enjoyed it. Thank you! 😁";
+      } else if (ratingValue === 4) {
+        message = "Great! We will try to make it better. Thank you! 😄";
+      } else if (ratingValue === 3) {
+        message = "Thanks! We will keep improving. Thank you! 😊";
+      } else if (ratingValue === 2) {
+        message = "Sorry to hear that. We'll work on it. Thank you! 🤗";
+      } else if (ratingValue === 1) {
+        message = "We apologize for the experience. Thank you! 😔";
+      }
+      //messageDiv.textContent = message;
+      messageDiv.innerHTML = `<span class="emoji-message">${message}</span>`;
+
+      setTimeout(() => {
+        resetForm();
+      }, 3000);
+    }
+
+    function resetForm() {
+      thankYouScreen.classList.add("hidden");
+      userIcon.classList.remove("hidden");
+      ratingScreen.classList.remove("hidden");
+      ratingOptions.forEach(option => option.checked = false);
+      submitReasonButton.disabled = true;
+      submitGoodFeedbackButton.disabled = true;
+      document.querySelectorAll(".food-options input[type='checkbox']").forEach(cb => cb.checked = false);
+  	  document.querySelectorAll(".good-food-options input[type='checkbox']").forEach(cb => cb.checked = false);
+      document.querySelectorAll(".reason-options input[type='checkbox']").forEach(cb => cb.checked = false);
+	    ratingNext.disabled=true;
+	    foodNext.disabled=true;
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+</script>
+
+</body>
+</html>

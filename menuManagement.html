@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <title>Menu Management</title>
+  <style>
+    /* Reset and base styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial', sans-serif; }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: #000;
+    }
+
+    .menu-container {
+      text-align: center;
+      width: 100%;
+      max-width: 1000px;
+      padding: 30px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+      font-size: 26px;
+      color: #4facfe;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .form-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .form-row label {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      width: 18%;
+      text-align: right;
+      margin-right: 40px;
+    }
+
+    input[type="date"],
+    input[type="text"] {
+      flex-grow: 1; /* Allow input to take available space */
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input[type="date"]:focus,
+    input[type="text"]:focus {
+      border-color: #056cc6;
+      outline: none;
+    }
+
+    button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      background-color: #4facfe;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #007bff;
+    }
+
+    .bulk-delete-btn {
+      background-color: #f44336;
+      margin-top: 15px;
+      transition: 0.3s;
+    }
+
+    .bulk-delete-btn:hover {
+      background-color: #e53935;
+    }
+
+    .table-container {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 20px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+      background: #fff;
+    }
+
+    th {
+      background-color: #f4f7f9;
+      color: #4facfe;
+      font-weight: bold;
+      position: sticky;
+      text-align: center;
+      top: 0;
+      z-index: 1;
+    }
+
+    .checkbox-cell {
+      text-align: center;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      color: #000;
+      cursor: pointer;
+      font-size: 14px;
+      transition: color 0.1s;
+    }
+
+    .action-btn:hover {
+      color: #fff;
+    }
+
+    #logoutBtn {
+      left: 440px;
+    position: relative;
+    top: -60px;
+    background: none;
+    border: none;
+    color: black;
+    cursor: pointer;
+    font-size: 28px;
+    z-index: 10;
+}
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .menu-container{
+        max-width: 550px;
+        margin: 20px;
+      }
+      h2 {
+        font-size: 1.5em;
+      }
+
+      .form-row input[type="date"], .form-row input[type="text"] {
+        width: 80%;
+        max-width: 100%;
+      }
+
+      .form-row label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+      width: 30%;
+      text-align: right;
+      margin-right: 30px;
+    }
+
+      #addMenuBtn {
+        width: 12%;
+        padding: 7px;
+      }
+      
+      th, td {
+        font-size: 0.9em;
+      }
+
+      button {
+        padding: 10px;
+        font-size: 0.9em;
+      }
+
+      .bulk-delete-btn {
+        padding: 10px;
+        font-size: 0.9em;
+      }
+      #logoutBtn {
+        left: 240px;
+        position: relative;
+        top: -53px;
+        font-size: 18px;
+        z-index: 10;
+}
+    }
+  </style>
+</head>
+<body>
+  <div class="menu-container">
+    <h2>Daily Menu Management</h2>
+    <button id="logoutBtn" style="margin-right:20px"><i class="bi bi-box-arrow-right"></i></button>
+
+    
+    <div class="form-row">
+      <label for="menu-date">Select Date:</label>
+      <input type="date" id="menu-date" />
+    </div>
+
+    <div class="form-row">
+      <label for="search-box">Search Food Items:</label>
+      <input type="text" id="search-box" placeholder="Search food items..." oninput="filterMenuItems()" />
+    </div>
+
+    <div class="form-row">
+      <label for="menu-item">Enter Food Item:</label>
+      <input type="text" id="menu-item" placeholder="Enter food item" />
+      <button onclick="addMenuItem()" id="addMenuBtn">Add Item</button>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th class="checkbox-cell"><input type="checkbox" onclick="selectAll(this)" /></th>
+            <th>Food Item</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="menu-table-body"></tbody>
+      </table>
+    </div>
+
+    <button class="bulk-delete-btn" onclick="deleteSelectedItems()">Delete Selected</button>
+    <button onclick="submitMenu()">Submit Menu</button>
+
+    <button onclick="downloadJSON()">Download Daily Menus</button>
+
+<script>
+function downloadJSON() {
+    // Retrieve all daily menus from localStorage
+    const dailyMenus = JSON.parse(localStorage.getItem('dailyMenus')) || {};
+
+    // Convert the data to a JSON string
+    const dataStr = JSON.stringify(dailyMenus, null, 2);
+
+    // Create a data URL to download as a JSON file
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+    // Create a link element
+    const downloadLink = document.createElement('a');
+    downloadLink.href = dataUri;
+    downloadLink.download = 'dailyMenus.json';
+
+    // Append link to the body
+    document.body.appendChild(downloadLink);
+    
+    // Programmatically click the link to trigger the download
+    downloadLink.click();
+    
+    // Remove the link after download
+    document.body.removeChild(downloadLink);
+}
+</script>
+
+  </div>
+
+  <script>
+    const menuTableBody = document.getElementById('menu-table-body');
+    const selectedDateElement = document.getElementById('menu-date');
+    const searchBox = document.getElementById('search-box');
+    let dailyMenus = JSON.parse(localStorage.getItem('dailyMenus')) || {}; 
+    let allFoodItems = JSON.parse(localStorage.getItem('allFoodItems')) || [];
+
+    // Load menu items for the selected date
+    selectedDateElement.addEventListener('change', loadMenu);
+    document.addEventListener('DOMContentLoaded', loadMenu);
+
+    function loadMenu() {
+  const selectedDate = selectedDateElement.value;
+  menuTableBody.innerHTML = '';
+
+  // Save the selected date to localStorage
+  localStorage.setItem('selectedMenuDate', selectedDate);
+
+  // Get the selected items for the day
+  const selectedItemsForDate = dailyMenus[selectedDate] || [];
+
+  allFoodItems.forEach((item, index) => {
+    createMenuRow(item, index, selectedItemsForDate); // Pass selected items to createMenuRow
+  });
+}
+
+function createMenuRow(item, index, selectedItemsForDate) {
+  const row = document.createElement('tr');
+
+  const checkboxCell = document.createElement('td');
+  checkboxCell.className = 'checkbox-cell';
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.className = 'food-checkbox';
+  checkbox.value = item;
+  
+  // Set checked state based on the selected items for the date
+  checkbox.checked = selectedItemsForDate.includes(item);
+
+  /////////////////////
+  // Update selected items on checkbox change
+  checkbox.addEventListener('change', () => updateSelectedItems(item, checkbox.checked));
+  
+  checkboxCell.appendChild(checkbox);
+
+  const itemCell = document.createElement('td');
+  itemCell.textContent = item;
+
+  const actionsCell = document.createElement('td');
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.className = 'action-btn';
+  deleteBtn.onclick = () => deleteMenuItem(item);
+  actionsCell.appendChild(deleteBtn);
+
+  row.appendChild(checkboxCell);
+  row.appendChild(itemCell);
+  row.appendChild(actionsCell);
+
+  menuTableBody.appendChild(row);
+}
+
+    function filterMenuItems() {
+      const searchTerm = searchBox.value.toLowerCase();
+      const rows = menuTableBody.getElementsByTagName('tr');
+
+      for (let row of rows) {
+        const itemCell = row.getElementsByTagName('td')[1];
+        if (itemCell) {
+          const textValue = itemCell.textContent.toLowerCase();
+          row.style.display = textValue.includes(searchTerm) ? '' : 'none';
+        }
+      }
+    }
+
+/////////////////////////////////
+function updateSelectedItems(item, isChecked) {
+  const selectedDate = selectedDateElement.value;
+  const selectedItemsForDate = dailyMenus[selectedDate] || [];
+
+  if (isChecked) {
+    // Add item if checked and not already in selected items
+    if (!selectedItemsForDate.includes(item)) {
+      selectedItemsForDate.push(item);
+    }
+  } else {
+    // Remove item if unchecked
+    const index = selectedItemsForDate.indexOf(item);
+    if (index > -1) {
+      selectedItemsForDate.splice(index, 1);
+    }
+  }
+
+  // Update dailyMenus and save to localStorage
+  dailyMenus[selectedDate] = selectedItemsForDate;
+  localStorage.setItem('dailyMenus', JSON.stringify(dailyMenus));
+}
+
+    function addMenuItem() {
+      const item = document.getElementById('menu-item').value.trim();
+      const selectedDate = selectedDateElement.value;
+
+      if (item && !allFoodItems.includes(item)) {
+        allFoodItems.push(item.charAt(0).toUpperCase() + item.slice(1));
+        localStorage.setItem('allFoodItems', JSON.stringify(allFoodItems));
+
+        // After adding the item, load the menu again to ensure checkboxes are correct
+        loadMenu();
+        
+        // Clear the input field
+        document.getElementById('menu-item').value = '';
+      } else {
+        alert("Item is empty or already exists!");
+      }
+    }
+
+    function deleteMenuItem(item) {
+      allFoodItems = allFoodItems.filter(existingItem => existingItem !== item);
+
+      // Remove the item from each date's menu if it was selected previously
+      for (const date in dailyMenus) {
+        dailyMenus[date] = dailyMenus[date].filter(existingItem => existingItem !== item);
+      }
+
+      localStorage.setItem('allFoodItems', JSON.stringify(allFoodItems));
+      localStorage.setItem('dailyMenus', JSON.stringify(dailyMenus));
+      loadMenu();
+    }
+
+    function deleteSelectedItems() {
+      const checkboxes = document.querySelectorAll('.food-checkbox:checked');
+      checkboxes.forEach(checkbox => {
+        deleteMenuItem(checkbox.value);
+      });
+    }
+
+    function submitMenu() {
+      const selectedDate = selectedDateElement.value;
+      const selectedItems = Array.from(document.querySelectorAll('.food-checkbox:checked')).map(checkbox => checkbox.value);
+
+      if (!selectedDate) {
+        alert("Please select a date.");
+        return;
+      }
+
+      if (selectedItems.length === 0) {
+        alert("Please select the food items.");
+        return;
+      }
+
+      if (selectedItems.length < 4) {
+        alert("Please select at least 4 food items.");
+        return;
+      }
+
+      dailyMenus[selectedDate] = selectedItems;
+      localStorage.setItem('dailyMenus', JSON.stringify(dailyMenus));
+      alert("Menu for " + selectedDate + " has been updated!");
+      //window.location.href = "foodRatingSystem.html";
+    }
+
+    function selectAll(checkbox) {
+      const foodCheckboxes = document.querySelectorAll('.food-checkbox');
+      foodCheckboxes.forEach(foodCheckbox => {
+        foodCheckbox.checked = checkbox.checked;
+      });
+    }
+
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+            window.location.href = 'foodRatingSystem.html';
+        });
+  </script>
+</body>
+</html>
