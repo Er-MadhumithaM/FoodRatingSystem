@@ -243,6 +243,36 @@
 
     <button class="bulk-delete-btn" onclick="deleteSelectedItems()">Delete Selected</button>
     <button onclick="submitMenu()">Submit Menu</button>
+
+    <button onclick="downloadJSON()">Download Daily Menus</button>
+
+<script>
+function downloadJSON() {
+    // Retrieve all daily menus from localStorage
+    const dailyMenus = JSON.parse(localStorage.getItem('dailyMenus')) || {};
+
+    // Convert the data to a JSON string
+    const dataStr = JSON.stringify(dailyMenus, null, 2);
+
+    // Create a data URL to download as a JSON file
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+    // Create a link element
+    const downloadLink = document.createElement('a');
+    downloadLink.href = dataUri;
+    downloadLink.download = 'dailyMenus.json';
+
+    // Append link to the body
+    document.body.appendChild(downloadLink);
+    
+    // Programmatically click the link to trigger the download
+    downloadLink.click();
+    
+    // Remove the link after download
+    document.body.removeChild(downloadLink);
+}
+</script>
+
   </div>
 
   <script>
@@ -283,6 +313,11 @@ function createMenuRow(item, index, selectedItemsForDate) {
   
   // Set checked state based on the selected items for the date
   checkbox.checked = selectedItemsForDate.includes(item);
+
+  /////////////////////
+  // Update selected items on checkbox change
+  checkbox.addEventListener('change', () => updateSelectedItems(item, checkbox.checked));
+  
   checkboxCell.appendChild(checkbox);
 
   const itemCell = document.createElement('td');
@@ -315,12 +350,35 @@ function createMenuRow(item, index, selectedItemsForDate) {
       }
     }
 
+/////////////////////////////////
+function updateSelectedItems(item, isChecked) {
+  const selectedDate = selectedDateElement.value;
+  const selectedItemsForDate = dailyMenus[selectedDate] || [];
+
+  if (isChecked) {
+    // Add item if checked and not already in selected items
+    if (!selectedItemsForDate.includes(item)) {
+      selectedItemsForDate.push(item);
+    }
+  } else {
+    // Remove item if unchecked
+    const index = selectedItemsForDate.indexOf(item);
+    if (index > -1) {
+      selectedItemsForDate.splice(index, 1);
+    }
+  }
+
+  // Update dailyMenus and save to localStorage
+  dailyMenus[selectedDate] = selectedItemsForDate;
+  localStorage.setItem('dailyMenus', JSON.stringify(dailyMenus));
+}
+
     function addMenuItem() {
       const item = document.getElementById('menu-item').value.trim();
       const selectedDate = selectedDateElement.value;
 
       if (item && !allFoodItems.includes(item)) {
-        allFoodItems.push(item);
+        allFoodItems.push(item.charAt(0).toUpperCase() + item.slice(1));
         localStorage.setItem('allFoodItems', JSON.stringify(allFoodItems));
 
         // After adding the item, load the menu again to ensure checkboxes are correct
